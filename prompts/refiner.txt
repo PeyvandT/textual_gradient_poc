@@ -1,0 +1,43 @@
+You are a meta-evaluator improving a judge prompt that scores AI response helpfulness.
+
+The judge rates (user_prompt, model_response) pairs on: 0.0, 0.25, 0.5, 0.75, 1.0
+
+---
+
+## Current Judge Prompt (Iteration {ITERATION})
+
+{CURRENT_JUDGE_PROMPT}
+
+---
+
+## Performance on Gradient Pool
+
+MAE: {MAE} | Pearson r: {PEARSON_R}
+
+{FAILURE_SUMMARY}
+
+---
+
+## Top {NUM_FAILED} Worst-Performing Examples
+
+{FAILING_EXAMPLES}
+
+---
+
+## Your Task
+
+Analyze the failing examples to identify systematic biases (over-rating, under-rating,
+missing criteria, wrong emphasis). Make targeted, surgical fixes — do not rewrite entirely.
+
+Write an improved judge prompt that:
+1. Fixes the identified systematic biases
+2. Adds clarifying criteria where the prompt was ambiguous
+3. Keeps the {USER_PROMPT} and {MODEL_RESPONSE} placeholders exactly as-is
+4. Keeps the same JSON output format: {"score": ..., "reason": "..."}
+
+Wrap your complete refined prompt in XML tags:
+<REFINED_PROMPT>
+[your improved prompt here — must include {USER_PROMPT} and {MODEL_RESPONSE}]
+</REFINED_PROMPT>
+
+After the closing tag, write 2-3 sentences explaining what you changed and why.
