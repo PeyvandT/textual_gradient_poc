@@ -9,10 +9,9 @@ Data splits (from 1000 balanced examples, 200 per class):
   - Test set         : 300 examples  (60/class)  — final eval only, never seen during training
 
 How to run:
-    pip install openai datasets scipy tqdm python-dotenv
-    OPENAI_API_KEY=sk-... python pipeline.py
-
-To switch to your work model: see call_model() below — just change 3 lines.
+    pip install requests datasets scipy tqdm python-dotenv
+    Set environment variables in .env (see .env.example), then:
+    python pipeline.py
 """
 
 import json
@@ -25,8 +24,11 @@ from pathlib import Path
 
 import requests
 from datasets import load_dataset
+from dotenv import load_dotenv
 from scipy import stats
 from tqdm import tqdm
+
+load_dotenv()
 
 # ─────────────────────────────────────────────
 # CONFIG  (edit here)
@@ -39,11 +41,15 @@ SUBSET_PER_ITER    = 100   # examples sampled from gradient pool each iteration
 NUM_ITERATIONS     = 10
 MAX_FAILED_SHOWN   = 50    # top-N worst failures sent to refiner
 
-MODEL              = "gpt-4o-mini"
-JUDGE_TEMPERATURE  = 0.0
+# Model settings — read from environment variables set in .env
+MODEL    = os.environ.get("DEEPSEEK_MODEL_NAME", "gpt-4o-mini")
+API_URL  = os.environ.get("DEEPSEEK_BASE_URL", "https://api.openai.com") + "/v1/chat/completions"
+API_KEY  = os.environ.get("DEEPSEEK_API_KEY") or os.environ.get("OPENAI_API_KEY")
+
+JUDGE_TEMPERATURE   = 0.0
 REFINER_TEMPERATURE = 0.8
-MAX_TOKENS_JUDGE   = 512
-MAX_TOKENS_REFINER = 3000
+MAX_TOKENS_JUDGE    = 512
+MAX_TOKENS_REFINER  = 3000
 
 JUDGE_PROMPT_PATH   = "prompts/judge.txt"
 REFINER_PROMPT_PATH = "prompts/refiner.txt"
@@ -52,31 +58,13 @@ RESULTS_DIR         = "results"
 
 
 # ── 1. MODEL CALL ─────────────────────────────────────────────────────────────
-#
-#  SWITCHING TO YOUR WORK MODEL
-#  ─────────────────────────────
-#  This function makes a single HTTP POST to an OpenAI-compatible chat endpoint.
-#  To use your work model, change these three things:
-#
-#    API_URL   = "https://your-work-endpoint/v1/chat/completions"
-#    API_KEY   = os.environ["YOUR_WORK_API_KEY"]
-#    "model"   = "your-model-name"
-#
-#  If your work API uses a different auth header (not "Bearer"), change:
-#    "Authorization": f"Bearer {API_KEY}"
-#  to whatever your API expects, e.g.:
-#    "api-key": API_KEY          # Azure OpenAI style
-#    "x-api-key": API_KEY        # some internal APIs
-#
 def call_model(prompt_text: str, temperature: float, max_tokens: int) -> str:
     """Send a prompt and return the model's text response."""
-    API_URL = "https://api.openai.com/v1/chat/completions"   # ← change for work
-    API_KEY = os.environ["OPENAI_API_KEY"]                   # ← change for work
 
     response = requests.post(
         API_URL,
         headers={
-            "Authorization": f"Bearer {API_KEY}",            # ← change for work
+            "Authorization": f"Bearer {API_KEY}",
             "Content-Type": "application/json",
         },
         json={
