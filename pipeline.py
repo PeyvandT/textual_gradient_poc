@@ -42,9 +42,9 @@ NUM_ITERATIONS     = 10
 MAX_FAILED_SHOWN   = 50    # top-N worst failures sent to refiner
 
 # Model settings — read from environment variables set in .env
-MODEL    = os.environ.get("DEEPSEEK_MODEL_NAME", "gpt-4o-mini")
-API_URL  = os.environ.get("DEEPSEEK_BASE_URL", "https://api.openai.com") + "/v1/chat/completions"
-API_KEY  = os.environ.get("DEEPSEEK_API_KEY") or os.environ.get("OPENAI_API_KEY")
+MODEL    = os.environ["DEEPSEEK_MODEL_NAME"]
+API_URL  = os.environ["DEEPSEEK_BASE_URL"] 
+API_KEY  = os.environ["DEEPSEEK_API_KEY"]
 
 JUDGE_TEMPERATURE   = 0.0
 REFINER_TEMPERATURE = 0.8
